@@ -8,6 +8,7 @@ import (
 
 	"github.com/NHemmerly/RSS-Feed/internal/config"
 	"github.com/NHemmerly/RSS-Feed/internal/database"
+	"github.com/NHemmerly/RSS-Feed/internal/fetch"
 	"github.com/google/uuid"
 )
 
@@ -96,6 +97,15 @@ func HandlerUsers(s *State, cmd Command) error {
 		fmt.Printf("* %s\n", user.Name)
 	}
 
+	return nil
+}
+
+func HandlerAgg(s *State, cmd Command) error {
+	feed, err := fetch.FetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
+	if err != nil {
+		return fmt.Errorf("could not fetch feed: %w", err)
+	}
+	fmt.Printf("%v", feed)
 	return nil
 }
 
