@@ -32,6 +32,8 @@ func main() {
 	args := os.Args
 	cmds.Register("login", state.HandlerLogin)
 	cmds.Register("register", state.HandlerRegister)
+	cmds.Register("reset", state.HandlerReset)
+	cmds.Register("users", state.HandlerUsers)
 	if len(args) < 2 {
 		fmt.Println("Why two?")
 		os.Exit(1)

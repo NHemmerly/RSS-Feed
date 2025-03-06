@@ -75,6 +75,30 @@ func HandlerRegister(s *State, cmd Command) error {
 	return nil
 }
 
+func HandlerReset(s *State, cmd Command) error {
+	if err := s.Db.ResetUser(context.Background()); err != nil {
+		return fmt.Errorf("could not reset table: %w", err)
+	}
+
+	return nil
+}
+
+func HandlerUsers(s *State, cmd Command) error {
+	users, err := s.Db.GetUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("could not retrieve all users: %w", err)
+	}
+	for _, user := range users {
+		if user.Name == s.Cfg.CurrentUserName {
+			fmt.Printf("* %s (current)\n", user.Name)
+			continue
+		}
+		fmt.Printf("* %s\n", user.Name)
+	}
+
+	return nil
+}
+
 func userExists(s *State, name string) bool {
 	_, err := s.Db.GetUser(context.Background(), name)
 	return err == nil
