@@ -3,6 +3,7 @@ package state
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"time"
 
@@ -106,6 +107,34 @@ func HandlerAgg(s *State, cmd Command) error {
 		return fmt.Errorf("could not fetch feed: %w", err)
 	}
 	fmt.Printf("%v", feed)
+	return nil
+}
+
+func HandlerAddFeed(s *State, cmd Command) error {
+	var feedUrl string
+	var feedName string
+	currentUser, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
+	if err != nil {
+		return fmt.Errorf("could not find current user: %w", err)
+	}
+	if len(cmd.Args) < 2 {
+		return fmt.Errorf("not enough args provided, expected 2; ")
+	}
+	if _, err := url.ParseRequestURI(cmd.Args[0]); err == nil {
+		feedUrl = cmd.Args[0]
+		feedName = cmd.Args[1]
+	} else if _, err := url.ParseRequestURI(cmd.Args[1]); err == nil {
+		feedUrl = cmd.Args[1]
+		feedName = cmd.Args[0]
+	}
+	s.Db.CreateFeed(context.Background(),
+		database.CreateFeedParams{
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			Name:      feedName,
+			Url:       feedUrl,
+			UserID:    currentUser.ID,
+		})
 	return nil
 }
 

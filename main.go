@@ -35,6 +35,7 @@ func main() {
 	cmds.Register("reset", state.HandlerReset)
 	cmds.Register("users", state.HandlerUsers)
 	cmds.Register("agg", state.HandlerAgg)
+	cmds.Register("addfeed", state.HandlerAddFeed)
 	if len(args) < 2 {
 		fmt.Println("Why two?")
 		os.Exit(1)
