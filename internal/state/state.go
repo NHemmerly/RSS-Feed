@@ -81,7 +81,9 @@ func HandlerReset(s *State, cmd Command) error {
 	if err := s.Db.ResetUser(context.Background()); err != nil {
 		return fmt.Errorf("could not reset table: %w", err)
 	}
-
+	if err := s.Db.ResetFeed(context.Background()); err != nil {
+		return fmt.Errorf("could not reset table: %w", err)
+	}
 	return nil
 }
 
@@ -135,6 +137,17 @@ func HandlerAddFeed(s *State, cmd Command) error {
 			Url:       feedUrl,
 			UserID:    currentUser.ID,
 		})
+	return nil
+}
+
+func HandlerFeeds(s *State, cmd Command) error {
+	feeds, err := s.Db.GetFeeds(context.Background())
+	if err != nil {
+		return fmt.Errorf("could not get feeds: %w", err)
+	}
+	for i := range feeds {
+		fmt.Println(feeds[i])
+	}
 	return nil
 }
 

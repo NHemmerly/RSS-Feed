@@ -8,3 +8,11 @@ VALUES (
     $5
 )
 RETURNING *;
+
+-- name: ResetFeed :exec
+DELETE FROM feeds;
+
+-- name: GetFeeds :many
+SELECT feeds.name, feeds.url, users.name as creator FROM feeds
+LEFT JOIN users ON users.id = feeds.user_id;
+
