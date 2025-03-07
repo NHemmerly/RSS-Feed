@@ -37,6 +37,8 @@ func main() {
 	cmds.Register("agg", state.HandlerAgg)
 	cmds.Register("addfeed", state.HandlerAddFeed)
 	cmds.Register("feeds", state.HandlerFeeds)
+	cmds.Register("follow", state.HandlerFollow)
+	cmds.Register("following", state.HandlerFollowing)
 	if len(args) < 2 {
 		fmt.Println("Why two?")
 		os.Exit(1)

@@ -16,3 +16,6 @@ DELETE FROM feeds;
 SELECT feeds.name, feeds.url, users.name as creator FROM feeds
 LEFT JOIN users ON users.id = feeds.user_id;
 
+-- name: GetFeedByUrl :one
+SELECT id FROM feeds
+WHERE url = $1;

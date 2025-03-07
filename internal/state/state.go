@@ -129,7 +129,7 @@ func HandlerAddFeed(s *State, cmd Command) error {
 		feedUrl = cmd.Args[1]
 		feedName = cmd.Args[0]
 	}
-	s.Db.CreateFeed(context.Background(),
+	feed, err := s.Db.CreateFeed(context.Background(),
 		database.CreateFeedParams{
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
@@ -137,6 +137,19 @@ func HandlerAddFeed(s *State, cmd Command) error {
 			Url:       feedUrl,
 			UserID:    currentUser.ID,
 		})
+	if err != nil {
+		return fmt.Errorf("could not create feed: %w", err)
+	}
+	_, err = s.Db.CreateFeedFollow(context.Background(),
+		database.CreateFeedFollowParams{
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			UserID:    currentUser.ID,
+			FeedID:    feed.ID,
+		})
+	if err != nil {
+		return fmt.Errorf("could not create feed follow: %w", err)
+	}
 	return nil
 }
 
@@ -151,7 +164,52 @@ func HandlerFeeds(s *State, cmd Command) error {
 	return nil
 }
 
+func HandlerFollow(s *State, cmd Command) error {
+	currentUser, err := getCurrentUser(s)
+	if err != nil {
+		return fmt.Errorf("could not retrieve current user: %w", err)
+	}
+	feedId, err := s.Db.GetFeedByUrl(context.Background(), cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("could not get feed by url: %w", err)
+	}
+	if len(cmd.Args) < 1 {
+		return fmt.Errorf("not enough args provided, expected 1; ")
+	}
+	s.Db.CreateFeedFollow(context.Background(),
+		database.CreateFeedFollowParams{
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			UserID:    currentUser.ID,
+			FeedID:    feedId,
+		})
+	return nil
+}
+
+func HandlerFollowing(s *State, cmd Command) error {
+	currentUser, err := getCurrentUser(s)
+	if err != nil {
+		return fmt.Errorf("could not retrieve current user: %w", err)
+	}
+	userFeeds, err := s.Db.GetFeedFollowsForUser(context.Background(), currentUser.Name)
+	if err != nil {
+		return fmt.Errorf("could not retrieve user's feeds: %w", err)
+	}
+	for i := range userFeeds {
+		fmt.Println(userFeeds[i])
+	}
+	return nil
+}
+
 func userExists(s *State, name string) bool {
 	_, err := s.Db.GetUser(context.Background(), name)
 	return err == nil
+}
+
+func getCurrentUser(s *State) (*database.User, error) {
+	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve current user: %w", err)
+	}
+	return &user, nil
 }
