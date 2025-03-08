@@ -35,10 +35,10 @@ func main() {
 	cmds.Register("reset", state.HandlerReset)
 	cmds.Register("users", state.HandlerUsers)
 	cmds.Register("agg", state.HandlerAgg)
-	cmds.Register("addfeed", state.HandlerAddFeed)
+	cmds.Register("addfeed", state.MiddlewareLoggedIn(state.HandlerAddFeed))
 	cmds.Register("feeds", state.HandlerFeeds)
-	cmds.Register("follow", state.HandlerFollow)
-	cmds.Register("following", state.HandlerFollowing)
+	cmds.Register("follow", state.MiddlewareLoggedIn(state.HandlerFollow))
+	cmds.Register("following", state.MiddlewareLoggedIn(state.HandlerFollowing))
 	if len(args) < 2 {
 		fmt.Println("Why two?")
 		os.Exit(1)
