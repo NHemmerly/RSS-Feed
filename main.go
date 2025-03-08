@@ -39,6 +39,7 @@ func main() {
 	cmds.Register("feeds", state.HandlerFeeds)
 	cmds.Register("follow", state.MiddlewareLoggedIn(state.HandlerFollow))
 	cmds.Register("following", state.MiddlewareLoggedIn(state.HandlerFollowing))
+	cmds.Register("unfollow", state.MiddlewareLoggedIn(state.HandlerUnfollow))
 	if len(args) < 2 {
 		fmt.Println("Why two?")
 		os.Exit(1)

@@ -189,15 +189,19 @@ func HandlerFollowing(s *State, cmd Command, user database.User) error {
 	return nil
 }
 
+func HandlerUnfollow(s *State, cmd Command, user database.User) error {
+	err := s.Db.RemoveFeedFollow(context.Background(),
+		database.RemoveFeedFollowParams{
+			Name: user.Name,
+			Url:  cmd.Args[0],
+		})
+	if err != nil {
+		return fmt.Errorf("could not remove follow record: %w ", err)
+	}
+	return nil
+}
+
 func userExists(s *State, name string) bool {
 	_, err := s.Db.GetUser(context.Background(), name)
 	return err == nil
-}
-
-func getCurrentUser(s *State) (*database.User, error) {
-	user, err := s.Db.GetUser(context.Background(), s.Cfg.CurrentUserName)
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve current user: %w", err)
-	}
-	return &user, nil
 }
