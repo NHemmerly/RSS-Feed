@@ -3,7 +3,6 @@ package state
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"os"
 	"time"
 
@@ -118,18 +117,10 @@ func HandlerAgg(s *State, cmd Command) error {
 }
 
 func HandlerAddFeed(s *State, cmd Command, user database.User) error {
-	var feedUrl string
-	var feedName string
 	if len(cmd.Args) < 2 {
 		return fmt.Errorf("not enough args provided, expected 2; ")
 	}
-	if _, err := url.ParseRequestURI(cmd.Args[0]); err == nil {
-		feedUrl = cmd.Args[0]
-		feedName = cmd.Args[1]
-	} else if _, err := url.ParseRequestURI(cmd.Args[1]); err == nil {
-		feedUrl = cmd.Args[1]
-		feedName = cmd.Args[0]
-	}
+	feedName, feedUrl := selectFeedNameUrl(cmd.Args[0], cmd.Args[1])
 	feed, err := s.Db.CreateFeed(context.Background(),
 		database.CreateFeedParams{
 			CreatedAt: time.Now(),

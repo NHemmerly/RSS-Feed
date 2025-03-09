@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/NHemmerly/RSS-Feed/internal/database"
@@ -43,4 +44,17 @@ func scrapeFeeds(s *State) error {
 		fmt.Printf("%v - %v\n", item.Title, item.Link)
 	}
 	return nil
+}
+
+func selectFeedNameUrl(name string, link string) (string, string) {
+	var feedUrl string
+	var feedName string
+	if _, err := url.ParseRequestURI(name); err == nil {
+		feedUrl = name
+		feedName = link
+	} else if _, err := url.ParseRequestURI(link); err == nil {
+		feedUrl = link
+		feedName = name
+	}
+	return feedName, feedUrl
 }
