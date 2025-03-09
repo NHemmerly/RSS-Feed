@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/NHemmerly/RSS-Feed/internal/config"
@@ -193,6 +194,30 @@ func HandlerUnfollow(s *State, cmd Command, user database.User) error {
 		})
 	if err != nil {
 		return fmt.Errorf("could not remove follow record: %w ", err)
+	}
+	return nil
+}
+
+func HandlerBrowser(s *State, cmd Command, user database.User) error {
+	limit := 2
+	if len(cmd.Args) > 0 {
+		lim, err := strconv.Atoi(cmd.Args[0])
+		if err != nil {
+			return fmt.Errorf("could not convert string to int: %w", err)
+		}
+		limit = lim
+	}
+	posts, err := s.Db.GetPostsForUser(context.Background(), database.GetPostsForUserParams{
+		UserID: user.ID,
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		return fmt.Errorf("could not get user posts: %w", err)
+	}
+
+	for _, post := range posts {
+		year, month, day := post.PublishedAt.Time.Date()
+		fmt.Printf("%d-%d-%d - %s: %v\n", year, month, day, post.Title, post.Description)
 	}
 	return nil
 }

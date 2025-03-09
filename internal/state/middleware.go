@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/NHemmerly/RSS-Feed/internal/database"
@@ -41,7 +42,31 @@ func scrapeFeeds(s *State) error {
 		return fmt.Errorf("could not fetch feed data: %w", err)
 	}
 	for _, item := range feedData.Channel.Item {
-		fmt.Printf("%v - %v\n", item.Title, item.Link)
+		pubDate, err := time.Parse("2006-01-02", item.PubDate)
+		if err != nil {
+			pubDate, err = time.Parse(time.RFC1123, item.PubDate)
+			if err != nil {
+				fmt.Printf("could not parse date: %s: %v\n", item.PubDate, err)
+				pubDate = time.Now()
+			}
+		}
+		_, err = s.Db.CreatePost(context.Background(), database.CreatePostParams{
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: sql.NullString{String: item.Description, Valid: true},
+			PublishedAt: sql.NullTime{Time: pubDate, Valid: true},
+			FeedID:      feed.ID,
+		})
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate") || strings.Contains(err.Error(), "unique constraint") {
+				fmt.Printf("Skipping duplicate post: %s\n", item.Title)
+				continue
+			}
+			fmt.Printf("could not create post: %s: %v\n", item.Title, err)
+			continue
+		}
 	}
 	return nil
 }
