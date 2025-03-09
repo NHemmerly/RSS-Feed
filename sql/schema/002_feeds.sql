@@ -11,6 +11,5 @@
         ON DELETE CASCADE
     );
 
-
 -- +goose Down
 DROP TABLE feeds;

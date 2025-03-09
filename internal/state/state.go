@@ -9,7 +9,6 @@ import (
 
 	"github.com/NHemmerly/RSS-Feed/internal/config"
 	"github.com/NHemmerly/RSS-Feed/internal/database"
-	"github.com/NHemmerly/RSS-Feed/internal/fetch"
 	"github.com/google/uuid"
 )
 
@@ -104,12 +103,18 @@ func HandlerUsers(s *State, cmd Command) error {
 }
 
 func HandlerAgg(s *State, cmd Command) error {
-	feed, err := fetch.FetchFeed(context.Background(), "https://www.wagslane.dev/index.xml")
-	if err != nil {
-		return fmt.Errorf("could not fetch feed: %w", err)
+	if len(cmd.Args) < 1 {
+		return fmt.Errorf("not enough args, expected 1; ")
 	}
-	fmt.Printf("%v", feed)
-	return nil
+	timeBetweenReqs, err := time.ParseDuration(cmd.Args[0])
+	if err != nil {
+		return fmt.Errorf("could not parse time argument: %w", err)
+	}
+	fmt.Printf("Collecting feeds every %v\n", timeBetweenReqs)
+	ticker := time.NewTicker(timeBetweenReqs)
+	for ; ; <-ticker.C {
+		scrapeFeeds(s)
+	}
 }
 
 func HandlerAddFeed(s *State, cmd Command, user database.User) error {
